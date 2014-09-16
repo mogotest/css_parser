@@ -454,11 +454,21 @@ module CssParser
           # remote file
           if uri.scheme == 'https'
             uri.port = 443 unless uri.port
-            http = Net::HTTP.new(uri.host, uri.port)
+
+            if @options[:proxy]
+              http = Net::HTTP::Proxy(@options[:proxy][:host], @options[:proxy][:port], @options[:proxy][:user], @options[:proxy][:password]).new(uri.host, uri.port)
+            else
+              http = Net::HTTP.new(uri.host, uri.port)
+            end
+
             http.use_ssl = true
             http.verify_mode = OpenSSL::SSL::VERIFY_NONE
           else
-            http = Net::HTTP.new(uri.host, uri.port)
+            if @options[:proxy]
+              http = Net::HTTP::Proxy(@options[:proxy][:host], @options[:proxy][:port], @options[:proxy][:user], @options[:proxy][:password]).new(uri.host, uri.port)
+            else
+              http = Net::HTTP.new(uri.host, uri.port)
+            end
           end
 
           res = http.get(uri.request_uri, {'User-Agent' => USER_AGENT, 'Accept-Encoding' => 'gzip'})
